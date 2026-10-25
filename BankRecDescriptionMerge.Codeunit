@@ -1,0 +1,95 @@
+
+codeunit 50100 "Bank Rec. Description Mgt."
+{
+    [EventSubscriber(
+        ObjectType::Table,
+        Database::"Bank Acc. Reconciliation Line",
+        'OnAfterInsertEvent',
+        '',
+        false,
+        false)]
+    local procedure OnAfterInsertBankRecLine(
+        var Rec: Record "Bank Acc. Reconciliation Line";
+        RunTrigger: Boolean)
+    var
+        RelatedPartyName: Text;
+        TransactionText: Text;
+        NewTransactionText: Text;
+    begin
+        RelatedPartyName := Rec."Related-Party Name";
+        TransactionText := Rec."Transaction Text";
+
+        // Specifieke herkenning van Action.
+        NewTransactionText := TransactionText;
+
+        // Action
+        if StrPos(TransactionText, '1447 Veldhoven') > 0 then begin
+            NewTransactionText :=
+                ConvertStr(TransactionText, '', '');
+            NewTransactionText :=
+                ReplaceText(
+                    TransactionText,
+                    '1447 Veldhoven',
+                    'Action - 1447 Veldhoven');
+            // Hema
+        end else if StrPos(TransactionText, 'BCK*Warenhuis Witte Ve') > 0 then begin
+            NewTransactionText :=
+                ConvertStr(TransactionText, '', '');
+            NewTransactionText :=
+                ReplaceText(
+                    TransactionText,
+                    'BCK*Warenhuis Witte Ve',
+                    'Hema: BCK*Warenhuis Witte Ve');
+        end;
+
+        // Is de tekst aangepast? Sla de nieuwe tekst op.
+        if NewTransactionText <> TransactionText then begin
+            Rec."Transaction Text" :=
+                CopyStr(
+                    NewTransactionText,
+                    1,
+                    MaxStrLen(Rec."Transaction Text"));
+
+            Rec.Modify(false);
+            exit;
+        end;
+
+        // Bestaande functionaliteit voor overige transacties.
+        if RelatedPartyName = '' then
+            exit;
+
+        // Voorkom dubbele toevoeging.
+        if StrPos(TransactionText, RelatedPartyName) > 0 then
+            exit;
+
+        Rec."Transaction Text" :=
+            CopyStr(
+                RelatedPartyName + ' ' + TransactionText,
+                1,
+                MaxStrLen(Rec."Transaction Text"));
+
+        Rec.Modify(false);
+    end;
+
+    local procedure ReplaceText(
+        SourceText: Text;
+        SearchText: Text;
+        ReplacementText: Text): Text
+    var
+        Position: Integer;
+        ResultText: Text;
+    begin
+        ResultText := SourceText;
+        Position := StrPos(ResultText, SearchText);
+
+        if Position > 0 then
+            ResultText :=
+                CopyStr(ResultText, 1, Position - 1) +
+                ReplacementText +
+                CopyStr(
+                    ResultText,
+                    Position + StrLen(SearchText));
+
+        exit(ResultText);
+    end;
+}
