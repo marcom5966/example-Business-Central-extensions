@@ -166,4 +166,4 @@ Meer achtergrond over deze oplossing:
 
 **Bankafschriften importeren via CSV in Business Central SaaS: slimme herkenning van transactieomschrijvingen voor betere automatische afstemming**
 
-[Dit artikel](https://www.jouwdomein.nl/blog/bankafschriften-importeren-via-csv-business-central) beschrijft de aanleiding, technische werking en praktijkvoordelen van deze extensie.
+[Dit artikel](https://www.digitalemels.nl/banktransacties-importeren-via-csv/) beschrijft de aanleiding, technische werking en praktijkvoordelen van deze extensie.
